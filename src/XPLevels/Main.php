@@ -13,112 +13,88 @@ class Main extends PluginBase {
 
     public function onEnable(): void {
         $this->saveDefaultConfig();
-    }
 
-    public function onCommand(CommandSender $sender, Command $command, string $label, array $args): bool {
-
-        if ($command->getName() !== "xp") {
-            return false;
+        // Remove vanilla /xp command
+        $cmdMap = $this->getServer()->getCommandMap();
+        $vanilla = $cmdMap->getCommand("xp");
+        if ($vanilla !== null) {
+            $cmdMap->unregister($vanilla);
         }
 
-        $msg = $this->getConfig()->get("messages");
+        // Register our /xp command manually
+        $cmdMap->register("xplevels", new class($this) extends Command {
 
-        if (!$sender->hasPermission("xplevels.use")) {
-            $sender->sendMessage($msg["no-permission"]);
-            return true;
-        }
+            private Main $plugin;
 
-        if (count($args) < 2) {
-            $sender->sendMessage($msg["usage"]);
-            return true;
-        }
+            public function __construct(Main $plugin){
+                parent::__construct("xp", "Manage player XP levels", "/xp <add|remove|set|see> <player> [amount]");
+                $this->setPermission("xplevels.use");
+                $this->plugin = $plugin;
+            }
 
-        $sub = strtolower($args[0]);
-        $target = $this->getServer()->getPlayerExact($args[1]);
+            public function execute(CommandSender $sender, string $label, array $args): bool {
 
-        if (!$target instanceof Player) {
-            $sender->sendMessage($msg["player-not-found"]);
-            return true;
-        }
+                $msg = $this->plugin->getConfig()->get("messages");
 
-        $xp = $target->getXpManager();
+                if(!$this->testPermission($sender)){
+                    $sender->sendMessage($msg["no-permission"]);
+                    return true;
+                }
 
-        // -------- SEE --------
-        if ($sub === "see") {
-            $level = $xp->getXpLevel();
-            $sender->sendMessage(str_replace(
-                ["{player}", "{amount}"],
-                [$target->getName(), (string)$level],
-                $msg["sender-see"]
-            ));
-            return true;
-        }
+                if(count($args) < 2){
+                    $sender->sendMessage($msg["usage"]);
+                    return true;
+                }
 
-        // All other commands need amount
-        if (count($args) < 3 || !is_numeric($args[2]) || (int)$args[2] < 0) {
-            $sender->sendMessage($msg["invalid-amount"]);
-            return true;
-        }
+                $sub = strtolower($args[0]);
+                $target = $this->plugin->getServer()->getPlayerExact($args[1]);
 
-        $amount = (int)$args[2];
+                if(!$target instanceof Player){
+                    $sender->sendMessage($msg["player-not-found"]);
+                    return true;
+                }
 
-        switch ($sub) {
+                $xp = $target->getXpManager();
 
-            case "add":
-                $xp->addXpLevels($amount);
+                if($sub === "see"){
+                    $sender->sendMessage(str_replace(
+                        ["{player}", "{amount}"],
+                        [$target->getName(), (string)$xp->getXpLevel()],
+                        $msg["sender-see"]
+                    ));
+                    return true;
+                }
 
-                $sender->sendMessage(str_replace(
-                    ["{amount}", "{player}"],
-                    [(string)$amount, $target->getName()],
-                    $msg["sender-add"]
-                ));
+                if(count($args) < 3 || !is_numeric($args[2]) || (int)$args[2] < 0){
+                    $sender->sendMessage($msg["invalid-amount"]);
+                    return true;
+                }
 
-                $target->sendMessage(str_replace(
-                    "{amount}",
-                    (string)$amount,
-                    $msg["target-add"]
-                ));
-                break;
+                $amount = (int)$args[2];
 
-            case "remove":
-                $current = $xp->getXpLevel();
-                $new = max(0, $current - $amount);
-                $xp->setXpLevel($new);
+                switch($sub){
 
-                $sender->sendMessage(str_replace(
-                    ["{amount}", "{player}"],
-                    [(string)$amount, $target->getName()],
-                    $msg["sender-remove"]
-                ));
+                    case "add":
+                        $xp->addXpLevels($amount);
+                        break;
 
-                $target->sendMessage(str_replace(
-                    "{amount}",
-                    (string)$amount,
-                    $msg["target-remove"]
-                ));
-                break;
+                    case "remove":
+                        $new = max(0, $xp->getXpLevel() - $amount);
+                        $xp->setXpLevel($new);
+                        break;
 
-            case "set":
-                $xp->setXpLevel($amount);
+                    case "set":
+                        $xp->setXpLevel($amount);
+                        break;
 
-                $sender->sendMessage(str_replace(
-                    ["{amount}", "{player}"],
-                    [(string)$amount, $target->getName()],
-                    $msg["sender-set"]
-                ));
+                    default:
+                        $sender->sendMessage($msg["usage"]);
+                        return true;
+                }
 
-                $target->sendMessage(str_replace(
-                    "{amount}",
-                    (string)$amount,
-                    $msg["target-set"]
-                ));
-                break;
-
-            default:
-                $sender->sendMessage($msg["usage"]);
-                break;
-        }
-
-        return true;
+                $sender->sendMessage("§aXP command executed successfully.");
+                return true;
+            }
+        });
     }
 }
