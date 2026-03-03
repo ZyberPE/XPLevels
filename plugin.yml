@@ -2,15 +2,14 @@ name: XPLevels
 main: XPLevels\Main
 version: 1.0.0
 api: 5.0.0
-author: ApexPELegitz
+author: zyberpe
 
 commands:
   xp:
-    description: Manage raw XP points
-    usage: "/xp <add|remove|set> <player> <amount>"
-    permission: xplevels.command
+    description: Manage raw XP
+    usage: "/xp <add|remove|set|see> <player> <amount>"
+    permission: xplevels.use
 
 permissions:
-  xplevels.command:
-    description: Allows use of /xp command
+  xplevels.use:
     default: op
