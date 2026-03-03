@@ -6,8 +6,8 @@ author: zyberpe
 
 commands:
   xp:
-    description: Manage raw XP
-    usage: "/xp <add|remove|set|see> <player> <amount>"
+    description: Manage player XP
+    usage: "/xp <add|remove|set|see> <player> [amount]"
     permission: xplevels.use
 
 permissions:
