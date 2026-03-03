@@ -6,7 +6,7 @@ author: zyberpe
 
 commands:
   xp:
-    description: Manage player XP
+    description: Manage player XP levels
     usage: "/xp <add|remove|set|see> <player> [amount]"
     permission: xplevels.use
 
