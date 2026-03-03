@@ -17,7 +17,12 @@ class Main extends PluginBase {
 
     public function onCommand(CommandSender $sender, Command $command, string $label, array $args): bool {
 
-        if (strtolower($command->getName()) !== "xp") {
+        // Block namespaced command usage like xplevels:xp
+        if (str_contains($label, ":")) {
+            return false;
+        }
+
+        if ($command->getName() !== "xp") {
             return false;
         }
 
