@@ -17,7 +17,7 @@ class Main extends PluginBase {
 
     public function onCommand(CommandSender $sender, Command $command, string $label, array $args): bool {
 
-        // Block namespaced command usage like xplevels:xp
+        // Block namespaced usage like xplevels:xp
         if (str_contains($label, ":")) {
             return false;
         }
@@ -62,7 +62,7 @@ class Main extends PluginBase {
                     return true;
                 }
 
-                $xpManager->addXpLevels($amount);
+                $xpManager->addXp($amount);
 
                 $target->sendMessage(
                     str_replace("{amount}", (string)$amount, $config["received-add"])
@@ -83,8 +83,8 @@ class Main extends PluginBase {
                     return true;
                 }
 
-                $newLevel = max(0, $xpManager->getXpLevel() - $amount);
-                $xpManager->setXpLevel($newLevel);
+                $newXp = max(0, $xpManager->getXp() - $amount);
+                $xpManager->setXp($newXp);
 
                 $target->sendMessage(
                     str_replace("{amount}", (string)$amount, $config["received-remove"])
@@ -100,7 +100,7 @@ class Main extends PluginBase {
                 break;
 
             case "set":
-                $xpManager->setXpLevel($amount);
+                $xpManager->setXp($amount);
 
                 $target->sendMessage(
                     str_replace("{amount}", (string)$amount, $config["received-set"])
