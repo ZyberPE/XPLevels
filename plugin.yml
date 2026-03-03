@@ -1,0 +1,16 @@
+name: XPLevels
+main: XPLevels\Main
+version: 1.0.0
+api: 5.0.0
+author: ZyberPE
+
+commands:
+  xp:
+    description: Manage player XP levels
+    usage: "/xp <add|remove|set> <player> <amount>"
+    permission: xplevels.command
+
+permissions:
+  xplevels.command:
+    description: Allows use of /xp commands
+    default: op
