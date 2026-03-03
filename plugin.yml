@@ -4,12 +4,6 @@ version: 1.0.0
 api: 5.0.0
 author: zyberpe
 
-commands:
-  xp:
-    description: Manage player XP levels
-    usage: "/xp <add|remove|set|see> <player> [amount]"
-    permission: xplevels.use
-
 permissions:
   xplevels.use:
     default: op
