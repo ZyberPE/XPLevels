@@ -41,20 +41,20 @@ class Main extends PluginBase {
             return true;
         }
 
-        $xpManager = $target->getXpManager();
+        $xp = $target->getXpManager();
 
-        // ---------------- SEE ----------------
+        // -------- SEE --------
         if ($sub === "see") {
-            $totalXp = $xpManager->getCurrentTotalXp();
+            $level = $xp->getXpLevel();
             $sender->sendMessage(str_replace(
                 ["{player}", "{amount}"],
-                [$target->getName(), (string)$totalXp],
+                [$target->getName(), (string)$level],
                 $msg["sender-see"]
             ));
             return true;
         }
 
-        // All others require amount
+        // All other commands need amount
         if (count($args) < 3 || !is_numeric($args[2]) || (int)$args[2] < 0) {
             $sender->sendMessage($msg["invalid-amount"]);
             return true;
@@ -65,7 +65,7 @@ class Main extends PluginBase {
         switch ($sub) {
 
             case "add":
-                $xpManager->addXp($amount);
+                $xp->addXpLevels($amount);
 
                 $sender->sendMessage(str_replace(
                     ["{amount}", "{player}"],
@@ -81,9 +81,9 @@ class Main extends PluginBase {
                 break;
 
             case "remove":
-                $current = $xpManager->getCurrentTotalXp();
-                $newXp = max(0, $current - $amount);
-                $xpManager->setCurrentTotalXp($newXp);
+                $current = $xp->getXpLevel();
+                $new = max(0, $current - $amount);
+                $xp->setXpLevel($new);
 
                 $sender->sendMessage(str_replace(
                     ["{amount}", "{player}"],
@@ -99,7 +99,7 @@ class Main extends PluginBase {
                 break;
 
             case "set":
-                $xpManager->setCurrentTotalXp($amount);
+                $xp->setXpLevel($amount);
 
                 $sender->sendMessage(str_replace(
                     ["{amount}", "{player}"],
