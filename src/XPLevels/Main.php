@@ -17,24 +17,25 @@ class Main extends PluginBase {
 
     public function onCommand(CommandSender $sender, Command $command, string $label, array $args): bool {
 
-        // Block namespaced usage like xplevels:xp
+        // Block namespaced command usage
         if (str_contains($label, ":")) {
-            return false;
+            $sender->sendMessage("§cUse /xp only.");
+            return true;
         }
 
         if ($command->getName() !== "xp") {
             return false;
         }
 
-        $config = $this->getConfig()->get("messages");
+        $msg = $this->getConfig()->get("messages");
 
-        if (!$sender->hasPermission("xplevels.command")) {
-            $sender->sendMessage($config["no-permission"]);
+        if (!$sender->hasPermission("xplevels.use")) {
+            $sender->sendMessage($msg["no-permission"]);
             return true;
         }
 
-        if (!isset($args[0], $args[1], $args[2])) {
-            $sender->sendMessage($config["usage"]);
+        if (!isset($args[0]) || !isset($args[1])) {
+            $sender->sendMessage($msg["usage"]);
             return true;
         }
 
@@ -42,84 +43,73 @@ class Main extends PluginBase {
         $target = $this->getServer()->getPlayerExact($args[1]);
 
         if (!$target instanceof Player) {
-            $sender->sendMessage($config["player-not-found"]);
+            $sender->sendMessage($msg["player-not-found"]);
             return true;
         }
 
-        if (!is_numeric($args[2]) || (int)$args[2] < 0) {
-            $sender->sendMessage($config["invalid-amount"]);
-            return true;
-        }
-
-        $amount = (int)$args[2];
         $xpManager = $target->getXpManager();
 
         switch ($sub) {
 
+            case "see":
+                $sender->sendMessage(
+                    str_replace(
+                        ["{player}", "{amount}"],
+                        [$target->getName(), (string)$xpManager->getXp()],
+                        $msg["see-message"]
+                    )
+                );
+                return true;
+
             case "add":
-                if ($amount <= 0) {
-                    $sender->sendMessage($config["invalid-amount"]);
-                    return true;
-                }
-
-                $xpManager->addXp($amount);
-
-                $target->sendMessage(
-                    str_replace("{amount}", (string)$amount, $config["received-add"])
-                );
-
-                $sender->sendMessage(
-                    str_replace(
-                        ["{amount}", "{player}"],
-                        [(string)$amount, $target->getName()],
-                        $config["sender-add"]
-                    )
-                );
-                break;
-
             case "remove":
-                if ($amount <= 0) {
-                    $sender->sendMessage($config["invalid-amount"]);
+            case "set":
+
+                if (!isset($args[2]) || !is_numeric($args[2]) || (int)$args[2] < 0) {
+                    $sender->sendMessage($msg["invalid-amount"]);
                     return true;
                 }
 
-                $newXp = max(0, $xpManager->getXp() - $amount);
-                $xpManager->setXp($newXp);
+                $amount = (int)$args[2];
 
-                $target->sendMessage(
-                    str_replace("{amount}", (string)$amount, $config["received-remove"])
-                );
+                switch ($sub) {
 
-                $sender->sendMessage(
-                    str_replace(
-                        ["{amount}", "{player}"],
-                        [(string)$amount, $target->getName()],
-                        $config["sender-remove"]
-                    )
-                );
-                break;
+                    case "add":
+                        $xpManager->addXp($amount);
+                        $target->sendMessage(str_replace("{amount}", (string)$amount, $msg["received-add"]));
+                        $sender->sendMessage(str_replace(
+                            ["{amount}", "{player}"],
+                            [(string)$amount, $target->getName()],
+                            $msg["sender-add"]
+                        ));
+                        break;
 
-            case "set":
-                $xpManager->setXp($amount);
+                    case "remove":
+                        $newXp = max(0, $xpManager->getXp() - $amount);
+                        $xpManager->setXp($newXp);
+                        $target->sendMessage(str_replace("{amount}", (string)$amount, $msg["received-remove"]));
+                        $sender->sendMessage(str_replace(
+                            ["{amount}", "{player}"],
+                            [(string)$amount, $target->getName()],
+                            $msg["sender-remove"]
+                        ));
+                        break;
 
-                $target->sendMessage(
-                    str_replace("{amount}", (string)$amount, $config["received-set"])
-                );
+                    case "set":
+                        $xpManager->setXp($amount);
+                        $target->sendMessage(str_replace("{amount}", (string)$amount, $msg["received-set"]));
+                        $sender->sendMessage(str_replace(
+                            ["{amount}", "{player}"],
+                            [(string)$amount, $target->getName()],
+                            $msg["sender-set"]
+                        ));
+                        break;
+                }
 
-                $sender->sendMessage(
-                    str_replace(
-                        ["{amount}", "{player}"],
-                        [(string)$amount, $target->getName()],
-                        $config["sender-set"]
-                    )
-                );
-                break;
-
-            default:
-                $sender->sendMessage($config["usage"]);
-                break;
+                return true;
         }
 
+        $sender->sendMessage($msg["usage"]);
         return true;
     }
 }
