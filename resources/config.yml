@@ -2,7 +2,7 @@ messages:
   no-permission: "§cYou do not have permission."
   usage: "§eUsage: /xp <add|remove|set|see> <player> [amount]"
   player-not-found: "§cPlayer not found."
-  invalid-amount: "§cAmount must be 0 or higher"
+  invalid-amount: "§cAmount must be 0 or higher."
 
   sender-add: "§aAdded {amount} levels to {player}."
   sender-remove: "§cRemoved {amount} levels from {player}."
